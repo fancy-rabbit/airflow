@@ -615,12 +615,14 @@ class Airflow(AirflowBaseView):
         html_dict = {}
         for template_field in task.template_fields:
             content = getattr(task, template_field)
+            if isinstance(content, unicode):
+                content = content.encode('utf-8')
             if template_field in wwwutils.get_attr_renderer():
                 html_dict[template_field] = \
-                    wwwutils.get_attr_renderer()[template_field](content)
+                    wwwutils.get_attr_renderer()[template_field](content).decode('utf-8')
             else:
                 html_dict[template_field] = (
-                    "<pre><code>" + str(content) + "</pre></code>")
+                    "<pre><code>" + str(content) + "</pre></code>").decode('utf-8')
 
         return self.render_template(
             'airflow/ti_code.html',
@@ -809,7 +811,9 @@ class Airflow(AirflowBaseView):
             if not attr_name.startswith('_'):
                 attr = getattr(ti, attr_name)
                 if type(attr) != type(self.task):  # noqa
-                    ti_attrs.append((attr_name, str(attr)))
+                    if isinstance(attr, unicode):
+                        attr = attr.encode('utf-8')
+                    ti_attrs.append((attr_name, str(attr).decode('utf-8')))
 
         task_attrs = []
         for attr_name in dir(task):
@@ -817,7 +821,9 @@ class Airflow(AirflowBaseView):
                 attr = getattr(task, attr_name)
                 if type(attr) != type(self.task) and \
                         attr_name not in wwwutils.get_attr_renderer():  # noqa
-                    task_attrs.append((attr_name, str(attr)))
+                    if isinstance(attr, unicode):
+                        attr = attr.encode('utf-8')
+                    task_attrs.append((attr_name, str(attr).decode('utf-8')))
 
         # Color coding the special attributes that are code
         special_attrs_rendered = {}

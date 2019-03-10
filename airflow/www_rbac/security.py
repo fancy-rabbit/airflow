@@ -134,6 +134,8 @@ class AirflowSecurityManager(SecurityManager, LoggingMixin):
     OP_PERMS = {
         'can_conf',
         'can_varimport',
+        'can_dagrun_success',
+        'can_dagrun_failed',
     }
 
     # global view-menu for dag-level access
